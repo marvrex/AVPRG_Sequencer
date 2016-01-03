@@ -8,6 +8,7 @@ void getShapes(Mat src, int thresh);
 void drawShapeContours(Mat src, int thresh);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
+bool isRectangleBackground(cv::Rect rectangle, Mat window);
 
 int verbinden(vector<vector<Point> > shapes);
 int thresh = 150;
@@ -89,7 +90,6 @@ void drawShapeContours(Mat src, int thresh) {
 	findContours(gray, contours, hierarchy, RETR_LIST, CV_CHAIN_APPROX_NONE);
 	Mat contoursImg = Mat::zeros(src.size(), CV_8UC3);
 
-	cout << contours.size();
 	for (int i = 0; i < contours.size(); i++) {
 		Scalar color = Scalar(125, 125, 125);
 		drawContours(contoursImg, contours, i, Scalar(125, 125, 125), 1, 8, hierarchy, 0, Point());
@@ -141,7 +141,11 @@ void drawShapeContours(Mat src, int thresh) {
 				cv::Rect rectangle = cv::boundingRect(contours[i]);
 				double ratio = std::abs(1 - (double) rectangle.width / rectangle.height);
 
-				//write our recctangle
+				//shape detection will recognize the white background as a rectangle, we want to remove it from our collection of shapes
+				if (isRectangleBackground(rectangle, result))
+					continue;
+
+				//write our rectangle
 				setLabel(result,"RECT", contours[i]);
 				rectCount++;
 			} else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27)
@@ -197,6 +201,19 @@ void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& cont
 	cv::Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
 	cv::rectangle(im, pt + cv::Point(0, baseline), pt + cv::Point(text.width, -text.height), CV_RGB(255,255,255), CV_FILLED);
 	cv::putText(im, label, pt, fontface, scale, CV_RGB(0,0,0), thickness, 8);
+}
+
+/*
+ * This is a bit of a hack:
+ * the white background will always be 2 pixels smaller in height and width.
+ */
+bool isRectangleBackground(cv::Rect rectangle, Mat window) {
+	Size rectSize = rectangle.size();
+	Size windowSize = window.size();
+	windowSize.height -= 2;
+	windowSize.width -= 2;
+
+	return rectSize == windowSize;
 }
 
 void getShapes(Mat src, int thresh){
