@@ -23,9 +23,7 @@ public slots:
 
     Node *next;
 
-    //void addNode(int xPos, int yPos, int colorId, int shapeId, int channel, Node *actual);
-
-    void play(Node *actual);
+    void wait(Node *actual);
 
 };
 
