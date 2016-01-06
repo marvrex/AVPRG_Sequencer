@@ -11,15 +11,11 @@ Node::Node()
 }
 
 
-void play(Node *actual){
+void Node::wait(Node *actual){
 
     actual->cooldown = true;
 
     int wait = actual->xPos;
-
-    //midiOutput.sendProgram(actual->channel, actual->shapeId);
-    //midiOutput.sendNoteOn(actual->channel, actual->yPos+60, actual->colorId);
-
 
     usleep(100000*wait);
 
