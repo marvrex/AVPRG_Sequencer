@@ -1,38 +1,84 @@
-#include "mainwindow.h"
+
 #include "soundobject.h"
 #include "midiinput.h"
 #include "midioutput.h"
 #include <stdlib.h>
 #include <unistd.h>
+#include "node.h"
 
 
-SoundObject::SoundObject(int xPos, int yPos, int colorId, int shapeId, int channel){
-    this->xPos = xPos;
-    this->yPos = yPos;
-    this->colorId = colorId;
-    this->shapeId = shapeId;
-    this->channel = channel;
+SoundObject::SoundObject(){
 
     QStringList connections = midiOutput.connections(true);
 
-    //play(this->xPos, this->yPos, this->colorId, this->shapeId,this->channel);
+    midiOutput.open("Microsoft GS Wavetable Synth");
+
+    this->start = new Node();
+    start->next = NULL;
+    this->actual = start;
 
 }
 
 SoundObject::~SoundObject(){
 }
 
-void SoundObject::play(int xPos, int yPos, int colorId, int shapeId, int channel){
 
-    midiOutput.sendProgram(channel, shapeId);
-    midiOutput.sendNoteOn(channel, yPos+60, colorId);
-
-    for(int i = 0; i<xPos;i++){
-        usleep(100000);
+void SoundObject::addNode(int xPos, int yPos, int colorId, int shapeId, int channel){
+    while(this->actual->next!=NULL){
+        this->actual = this->actual->next;
     }
+    Node *node = new Node;
+    node->xPos = xPos;
+    node->yPos = yPos;
+    node->colorId = colorId;
+    node->shapeId = shapeId;
+    node->channel = channel;
+    node->next = NULL;
 
-
-    //midiOutput.sendNoteOff(channel, yPos+60, colorId);
-
+    this->actual->next = node;
 }
 
+void SoundObject::deleteNode(int channel){
+
+    Node *node = NULL;
+
+    while(this->actual->next!=NULL){
+        node = this->actual->next;
+
+        if(node->channel == channel){
+            if(node->next!=NULL){
+
+                actual->next = node->next;
+                break;
+
+            }else{
+                actual->next = NULL;
+                break;
+
+            }
+        }
+
+
+        this->actual = this->actual->next;
+    }
+}
+
+void SoundObject::play(){
+
+    while(this->actual != NULL){
+
+        if(this->actual->cooldown == false){
+
+            midiOutput.sendProgram(this->actual->channel, this->actual->shapeId);
+            midiOutput.sendNoteOn(this->actual->channel, this->actual->yPos+60, this->actual->colorId);
+            this->actual->wait(this->actual);
+
+
+        }
+
+        this->actual = this->actual->next;
+    }
+
+    this->actual = this->start;
+
+}
