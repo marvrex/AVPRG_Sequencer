@@ -1,11 +1,14 @@
 #include <iostream>
 #include <opencv2\opencv.hpp>
+#include "ColorSplitter.h"
 
 using namespace cv;
 using namespace std;
 
+
+
 void getShapes(Mat src, int thresh);
-void drawShapeContours(Mat src, int thresh);
+void drawShapeContours(String name, Mat src, int thresh);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
 bool isRectangleBackground(cv::Rect rectangle, Mat window);
@@ -33,7 +36,7 @@ int main(){
 			//Load frame
 			cap >> frame;
 
-			//getShapes(frame);
+			//drawShapeContours(frame, thresh);
 
 			//break
 			if (waitKey(30) >= 0) break;
@@ -52,10 +55,20 @@ int main(){
 		createTrackbar("Canny thresh:", "src", &thresh, max_thresh);
 		imshow("src", src);
 
-		
+		ColorSplitter colorSplitter;
+
 		while (true){
-			//getShapes(src, thresh);
-			drawShapeContours(src, thresh);
+			Mat hsv;
+
+			Mat blue = colorSplitter.getImageChannel(src, "blue");
+			drawShapeContours("blue", blue, thresh);
+
+			Mat red = colorSplitter.getImageChannel(src, "red");
+			drawShapeContours("red", red, thresh);
+
+			Mat green = colorSplitter.getImageChannel(src, "green");
+			drawShapeContours("green", green, thresh);
+
 			if (waitKey(50) == 27){
 				break;
 			}
@@ -66,11 +79,11 @@ int main(){
 	return 0;
 }
 
-void drawShapeContours(Mat src, int thresh) {
+void drawShapeContours(String name, Mat src, int thresh) {
 	Mat gray;
-
-	//convert to gray, blur and apply a threshold
 	cvtColor(src, gray, CV_BGR2GRAY);
+	//convert to gray, blur and apply a threshold
+	
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 	threshold(gray, gray, thresh, 255, CV_THRESH_BINARY);
 
@@ -96,7 +109,7 @@ void drawShapeContours(Mat src, int thresh) {
 	}
 
 	//show contoursImg
-	imshow("contours", contoursImg);
+	//imshow("contours", contoursImg);
 
 	//approximate contours and write them to result
 	Mat result = src.clone();
@@ -169,7 +182,7 @@ void drawShapeContours(Mat src, int thresh) {
 
 	//end of loop
 	}
-	imshow("result", result);
+	imshow(name, result);
 }
 
 /**
@@ -216,69 +229,3 @@ bool isRectangleBackground(cv::Rect rectangle, Mat window) {
 	return rectSize == windowSize;
 }
 
-void getShapes(Mat src, int thresh){
-
-	namedWindow("result", WINDOW_AUTOSIZE);
-	namedWindow("contours_drawing", WINDOW_AUTOSIZE);
-	namedWindow("contours", WINDOW_AUTOSIZE);
-
-
-	Mat gray, src_copy;
-	Mat result(src.rows, src.cols, CV_8UC1, Scalar(0, 0, 0));
-	Mat contours_drawing(src.rows, src.cols, CV_8UC1, Scalar(0, 0, 0));
-
-	//Convert src to GRAY
-	cvtColor(src, gray, CV_BGR2GRAY);
-
-
-	threshold(gray, gray, 245, 255, 0);
-	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
-
-	Mat canny_output;
-	vector<vector<Point> > contours;
-	vector<vector<Point> > shapes;
-	vector<Vec4i> hierarchy;
-
-
-	// Detect edges using canny
-	Canny(gray, canny_output, thresh, thresh*2, 3);
-	
-	//dilate um nur eine linie zu bekommen
-	dilate(canny_output, canny_output, Mat(), Point(-1, -1), 1); 
-	erode(canny_output, canny_output, Mat(), Point(-1, -1), 1);
-
-	 //find contours
-	findContours(canny_output, contours, hierarchy, CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE);
-	for (int i = 0; i < contours.size(); i++){
-		drawContours(contours_drawing, contours, i, Scalar(125, 125, 125), 1, 8, hierarchy, 0, Point());
-	}
-	imshow("contours_drawing", contours_drawing);
-	imshow("contours", contours);
-
-	shapes.resize(contours.size());
-
-	int anzahlquadrate = 0;
-	int anzahldreiecke = 0;
-
-	//gehe alle konturen durch
-	for (size_t i = 0; i < contours.size(); i++){
-
-		//nimm aus der kontur alle punkte und mache daraus eine figur
-		approxPolyDP(contours[i], shapes[i], 1, true);
-
-
-		//zeichnen der figur
-		//cout << "figur gefunden mit " + to_string(shapes[i].size()) + " ecken.";
-		cout << "\n";
-		for (int j = 0; j < shapes[i].size(); j++){
-			if (j == (shapes[i].size() - 1)){
-				line(result, shapes[i][j], shapes[i][0], Scalar(255, 255, 255), 1, 8, 0);
-			}
-			else{
-				line(result, shapes[i][j], shapes[i][j + 1], Scalar(255, 255, 255), 1, 8, 0);
-			}
-		}
-	}
-
-	imshow("result", result);
-}
