@@ -1,5 +1,6 @@
 #include <iostream>
 #include <opencv2\opencv.hpp>
+#include "ColorSplitter.h"
 
 using namespace cv;
 using namespace std;
@@ -17,7 +18,7 @@ int thresh = 150;
 int max_thresh = 255;
 
 //debug code
-String imageDirectory = "C:\\Users\\Timmi\\Documents\\Visual Studio 2013\\Projects\\avprg\\test3.jpg";
+String imageDirectory = "C:\\dev\\git\\AVPRG_Sequencer\\avprg\\test3.jpg";
 RNG rng(120);
 
 int main(){
@@ -54,70 +55,19 @@ int main(){
 		createTrackbar("Canny thresh:", "src", &thresh, max_thresh);
 		imshow("src", src);
 
-		
+		ColorSplitter colorSplitter;
+
 		while (true){
 			Mat hsv;
 
-
-			/*
-			*BLUE
-			*/
-			Mat mask_blue;
-			Mat blue(src.size().height, src.size().width, CV_8UC3, Scalar(255, 255, 255));			
-			//convert to HSV
-			cvtColor(src, hsv, CV_BGR2HSV);
-			//define color range in HSV
-			Scalar lowerBlue = Scalar(85, 100, 100);
-			Scalar upperBlue = Scalar(130, 255, 255);
-			//Threshold the HSV image to get a mask
-			inRange(hsv, lowerBlue, upperBlue, mask_blue);
-			//apply mask
-			src.copyTo(blue, mask_blue);
-			//call function
+			Mat blue = colorSplitter.getImageChannel(src, "blue");
 			drawShapeContours("blue", blue, thresh);
 
-			/*
-			*RED
-			*/
-			Mat mask_red;
-			Mat mask_red1;
-			Mat mask_red2;
-			Mat red(src.size().height, src.size().width, CV_8UC3, Scalar(255, 255, 255));
-			//convert to HSV
-			cvtColor(src, hsv, CV_BGR2HSV);
-			//define color range in HSV
-			Scalar lowerRed1 = Scalar(0, 100, 100);
-			Scalar upperRed1 = Scalar(10, 255, 255);
-			Scalar lowerRed2 = Scalar(160, 100, 100);
-			Scalar upperRed2 = Scalar(180, 255, 255);
-			//Threshold the HSV image to get a mask
-			inRange(hsv, lowerRed1, upperRed1, mask_red1);
-			inRange(hsv, lowerRed2, upperRed2, mask_red2);
-			bitwise_or(mask_red1, mask_red2, mask_red);
-			//apply mask
-			src.copyTo(red, mask_red);
-			//call function
+			Mat red = colorSplitter.getImageChannel(src, "red");
 			drawShapeContours("red", red, thresh);
 
-			/*
-			*GREEN
-			*/
-			Mat mask_green;
-			Mat green(src.size().height, src.size().width, CV_8UC3, Scalar(255, 255, 255));
-			//convert to HSV
-			cvtColor(src, hsv, CV_BGR2HSV);
-			//define color range in HSV
-			Scalar lowerGreen = Scalar(40, 100, 100);
-			Scalar upperGreen = Scalar(84, 255, 255);
-			//Threshold the HSV image to get a mask
-			inRange(hsv, lowerGreen, upperGreen, mask_green);
-			//apply mask
-			src.copyTo(green, mask_green);
-			//call function
+			Mat green = colorSplitter.getImageChannel(src, "green");
 			drawShapeContours("green", green, thresh);
-
-
-
 
 			if (waitKey(50) == 27){
 				break;
