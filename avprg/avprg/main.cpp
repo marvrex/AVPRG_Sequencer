@@ -17,7 +17,7 @@ int thresh = 150;
 int max_thresh = 255;
 
 //debug code
-String imageDirectory = "C:\\dev\\git\\AVPRG_Sequencer\\avprg\\test3.jpg";
+String imageDirectory = "C:\\Users\\Timmi\\Documents\\Visual Studio 2013\\Projects\\avprg\\test3.jpg";
 RNG rng(120);
 
 int main(){

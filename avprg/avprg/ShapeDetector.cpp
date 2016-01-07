@@ -1,6 +1,8 @@
 #include <math.h>
 #include <opencv2\opencv.hpp>
 #include "ShapeDetector.h"
+#include "Object.h"
+#include <list>  
 
 using namespace cv;
 using namespace std;
@@ -16,7 +18,7 @@ ShapeDetector::ShapeDetector()
 ShapeDetector::~ShapeDetector()
 {};
 
-void ShapeDetector::getShapes(String name, Mat src, int thresh) {
+std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 	Mat gray;
 	cvtColor(src, gray, CV_BGR2GRAY);
 	//convert to gray, blur and apply a threshold
@@ -54,6 +56,9 @@ void ShapeDetector::getShapes(String name, Mat src, int thresh) {
 	int rectCount = 0;
 	int circleCount = 0;
 
+	std::list<Object> objects;
+
+
 	for (int i = 0; i < contours.size(); i++) {
 		cv::approxPolyDP(cv::Mat(contours[i]),approx, cv::arcLength(cv::Mat(contours[i]), true) * 0.02,true);
 
@@ -65,6 +70,8 @@ void ShapeDetector::getShapes(String name, Mat src, int thresh) {
 		if (approx.size() == 3) {
 			setLabel(result, "TRI", contours[i]);
 			triangleCount++;
+			cv::Point position = getPosition(contours[i]);
+			Object o("TRI", color, position);
 		}
 		//rectangle and hexagon
 		else if (approx.size() >= 4 && approx.size() <= 6) {
@@ -95,10 +102,14 @@ void ShapeDetector::getShapes(String name, Mat src, int thresh) {
 				//write our rectangle
 				setLabel(result,"RECT", contours[i]);
 				rectCount++;
-			} else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27)
+				cv::Point position = getPosition(contours[i]);
+			} else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27){
 				setLabel(result, "PENTA", contours[i]);
-			else if (vertices == 6 && minCos >= -0.55 && maxCos <= -0.45)
+				cv::Point position = getPosition(contours[i]);
+			} else if (vertices == 6 && minCos >= -0.55 && maxCos <= -0.45){
 				setLabel(result, "HEXA", contours[i]);
+				cv::Point position = getPosition(contours[i]);
+			}
 		}
 		else {
 			//if the shape isnt a triangle, rectangle or hexagon, it should be a circle
@@ -116,8 +127,21 @@ void ShapeDetector::getShapes(String name, Mat src, int thresh) {
 
 	//end of loop
 	}
-	imshow(name, result);
+	imshow(color, result);
+	return objects;
 }
+
+
+/*
+* get centered position
+*/
+Point ShapeDetector::getPosition(vector<Point> contour){
+	cv::Rect r = cv::boundingRect(contour);
+	cv::Point pt(r.x + (r.width / 2), r.y + (r.height / 2));
+	return pt;
+}
+
+
 
 /**
  * Helper function to find a cosine of angle between vectors

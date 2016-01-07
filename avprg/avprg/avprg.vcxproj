@@ -144,7 +144,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ColorSplitter.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Object.cpp" />
+    <ClCompile Include="ShapeDetector.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ColorSplitter.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="ShapeDetector.h" />
+    <ClInclude Include="VideoCapture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

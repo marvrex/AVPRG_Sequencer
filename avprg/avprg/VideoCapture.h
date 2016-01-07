@@ -14,6 +14,6 @@ public:
 	void openVideo(String path);
 	void openImage(String path);
 	cv::Mat openCamera(int channel);
-}
+};
 
 #endif
