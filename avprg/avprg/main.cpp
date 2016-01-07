@@ -2,22 +2,18 @@
 #include <opencv2\opencv.hpp>
 #include "ColorSplitter.h"
 #include "ShapeDetector.h"
+#include "CollectionAggregator.h"
+#include "Object.h"
 
 using namespace cv;
 using namespace std;
-
-void getShapes(Mat src, int thresh);
-void drawShapeContours(String name, Mat src, int thresh);
-void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);
-static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
-bool isRectangleBackground(cv::Rect rectangle, Mat window);
 
 int verbinden(vector<vector<Point> > shapes);
 int thresh = 150;
 int max_thresh = 255;
 
 //debug code
-String imageDirectory = "C:\\Users\\Timmi\\Documents\\Visual Studio 2013\\Projects\\avprg\\test3.jpg";
+String imageDirectory = "C:\\dev\\git\\AVPRG_Sequencer\\avprg\\test3.jpg";
 RNG rng(120);
 
 int main(){
@@ -34,8 +30,6 @@ int main(){
 		for (;;){
 			//Load frame
 			cap >> frame;
-
-			//drawShapeContours(frame, thresh);
 
 			//break
 			if (waitKey(30) >= 0) break;
@@ -56,17 +50,24 @@ int main(){
 
 		ColorSplitter colorSplitter;
 		ShapeDetector shapeDetector;
+		CollectionAggregator aggregator;
+		std::list<Object> objects;
 
 		while (true){
 			Mat blue = colorSplitter.getImageChannel(src, "blue");
-			shapeDetector.getShapes("blue", blue, thresh);
+			objects = shapeDetector.getShapes("blue", blue, thresh);
+			aggregator.append(objects);
 
 			Mat red = colorSplitter.getImageChannel(src, "red");
-			shapeDetector.getShapes("red", red, thresh);
+			objects = shapeDetector.getShapes("red", red, thresh);
+			aggregator.append(objects);
 
 			Mat green = colorSplitter.getImageChannel(src, "green");
-			shapeDetector.getShapes("green", green, thresh);
+			objects = shapeDetector.getShapes("green", green, thresh);
+			aggregator.append(objects);
 
+			cout << aggregator.retrieve().size() << endl;
+			objects.clear();
 			if (waitKey(50) == 27){
 				break;
 			}

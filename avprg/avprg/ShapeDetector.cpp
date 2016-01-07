@@ -9,6 +9,7 @@ using namespace std;
 
 void getShapes(Mat src, int thresh);
 void setLabel(cv::Mat& im, const std::string label, std::vector<cv::Point>& contour);
+void removeDuplicates(std::list<Object>);
 static double angle(cv::Point pt1, cv::Point pt2, cv::Point pt0);
 bool isRectangleBackground(cv::Rect rectangle, Mat window);
 
@@ -52,12 +53,6 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 
 	//approx will contain the vertices of our objects
 	vector<cv::Point> approx;
-	int triangleCount = 0;
-	int rectCount = 0;
-	int circleCount = 0;
-
-	std::list<Object> objects;
-
 
 	for (int i = 0; i < contours.size(); i++) {
 		cv::approxPolyDP(cv::Mat(contours[i]),approx, cv::arcLength(cv::Mat(contours[i]), true) * 0.02,true);
@@ -69,9 +64,10 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 		//Triangle
 		if (approx.size() == 3) {
 			setLabel(result, "TRI", contours[i]);
-			triangleCount++;
 			cv::Point position = getPosition(contours[i]);
 			Object o("TRI", color, position);
+			if (!isDuplicate(objects, position))
+				objects.push_back(o);
 		}
 		//rectangle and hexagon
 		else if (approx.size() >= 4 && approx.size() <= 6) {
@@ -101,7 +97,6 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 
 				//write our rectangle
 				setLabel(result,"RECT", contours[i]);
-				rectCount++;
 				cv::Point position = getPosition(contours[i]);
 			} else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27){
 				setLabel(result, "PENTA", contours[i]);
@@ -117,17 +112,16 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 			cv::Rect rect = cv:: boundingRect(contours[i]);
 			int radius = rect.width / 2;
 
-			
 		 if (std::abs(1 - ((double)rect.width / rect.height)) <= 0.2 &&
 			 std::abs(1 - (area / (CV_PI * std::pow((float) radius, (float)2)))) <= 0.2) {
 				setLabel(result, "CIRCLE", contours[i]);
-				circleCount++;
 			}
 		}
 
 	//end of loop
 	}
 	imshow(color, result);
+
 	return objects;
 }
 
@@ -174,7 +168,28 @@ void ShapeDetector::setLabel(cv::Mat& im, const std::string label, std::vector<c
 	cv::putText(im, label, pt, fontface, scale, CV_RGB(0,0,0), thickness, 8);
 }
 
+
+bool ShapeDetector::isDuplicate(std::list<Object> objects, cv::Point newPosition) {
+	int tempX;
+	int tempY;
+
+	//allocate iterator
+	list<Object>::iterator iter = objects.begin();
+	while (iter != objects.end()) {
+		Object& temp = *iter;
+		tempX = temp.getPosition().x;
+		tempY = temp.getPosition().y;
+
+		if (newPosition.x == tempX &&
+			newPosition.y == tempY)
+			return true;
+	}
+
+	return false;
+}
+
 /*
+ * DEPRECATED:
  * This is a bit of a hack:
  * the white background will always be 2 pixels smaller in height and width.
  */
