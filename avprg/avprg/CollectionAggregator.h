@@ -4,6 +4,7 @@
 
 #include <opencv2\opencv.hpp>
 #include "Object.h"
+#include <list>
 
 using namespace cv;
 using namespace std;
@@ -15,6 +16,7 @@ public:
 	~CollectionAggregator();
 	void CollectionAggregator::append(std::list<Object> objects);
 	std::list<Object> CollectionAggregator::retrieve();
+	void setNewCycle();
 private:
 	std::list<Object> objects;
 	bool newCycle;

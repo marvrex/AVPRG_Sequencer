@@ -23,7 +23,7 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 	Mat gray;
 	cvtColor(src, gray, CV_BGR2GRAY);
 	//convert to gray, blur and apply a threshold
-	
+
 	GaussianBlur(gray, gray, Size(9, 9), 2, 2);
 	threshold(gray, gray, thresh, 255, CV_THRESH_BINARY);
 
@@ -32,7 +32,7 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 	Canny(gray, edges, 100, 200, 3, true);
 
 	//opening um nur eine linie zu bekommen
-	dilate(edges, edges, Mat(), Point(-1, -1), 1); 
+	dilate(edges, edges, Mat(), Point(-1, -1), 1);
 	erode(edges, edges, Mat(), Point(-1, -1), 1);
 
 	//contours and their hierarchy
@@ -54,11 +54,14 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 	//approx will contain the vertices of our objects
 	vector<cv::Point> approx;
 
+	objects.clear();
+
+
 	for (int i = 0; i < contours.size(); i++) {
-		cv::approxPolyDP(cv::Mat(contours[i]),approx, cv::arcLength(cv::Mat(contours[i]), true) * 0.02,true);
+		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true) * 0.02, true);
 
 		//skip small and non-convex shapes
-		if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx) )
+		if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
 			continue;
 
 		//Triangle
@@ -66,8 +69,8 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 			setLabel(result, "TRI", contours[i]);
 			cv::Point position = getPosition(contours[i]);
 			Object o("TRI", color, position);
-			if (!isDuplicate(objects, position))
-				objects.push_back(o);
+			objects.push_back(o);
+
 		}
 		//rectangle and hexagon
 		else if (approx.size() >= 4 && approx.size() <= 6) {
@@ -76,10 +79,10 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 
 			//get degree of all corners
 			std::vector<double> cos;
-			for (int j = 2; j < vertices+1; j++) {
-				cos.push_back(angle(approx[j%vertices], approx[j-2], approx[j-1]));
+			for (int j = 2; j < vertices + 1; j++) {
+				cos.push_back(angle(approx[j%vertices], approx[j - 2], approx[j - 1]));
 			}
-			
+
 			//sort ascending the angles
 			std::sort(cos.begin(), cos.end());
 
@@ -89,36 +92,47 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 
 			if (vertices == 4 && minCos >= -0.1 && maxCos <= 0.3) {
 				cv::Rect rectangle = cv::boundingRect(contours[i]);
-				double ratio = std::abs(1 - (double) rectangle.width / rectangle.height);
+				double ratio = std::abs(1 - (double)rectangle.width / rectangle.height);
 
 				//shape detection will recognize the white background as a rectangle, we want to remove it from our collection of shapes
 				if (isRectangleBackground(rectangle, result))
 					continue;
 
 				//write our rectangle
-				setLabel(result,"RECT", contours[i]);
+				setLabel(result, "RECT", contours[i]);
 				cv::Point position = getPosition(contours[i]);
-			} else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27){
+				Object o("RECT", color, position);
+				objects.push_back(o);
+			}
+			else if (vertices == 5 && minCos >= -0.34 && maxCos <= -0.27){
 				setLabel(result, "PENTA", contours[i]);
 				cv::Point position = getPosition(contours[i]);
-			} else if (vertices == 6 && minCos >= -0.55 && maxCos <= -0.45){
+				Object o("PENTA", color, position);
+				objects.push_back(o);
+			}
+			else if (vertices == 6 && minCos >= -0.55 && maxCos <= -0.45){
 				setLabel(result, "HEXA", contours[i]);
 				cv::Point position = getPosition(contours[i]);
+				Object o("HEXA", color, position);
+				objects.push_back(o);
 			}
 		}
 		else {
 			//if the shape isnt a triangle, rectangle or hexagon, it should be a circle
 			double area = cv::contourArea(contours[i]);
-			cv::Rect rect = cv:: boundingRect(contours[i]);
+			cv::Rect rect = cv::boundingRect(contours[i]);
 			int radius = rect.width / 2;
 
-		 if (std::abs(1 - ((double)rect.width / rect.height)) <= 0.2 &&
-			 std::abs(1 - (area / (CV_PI * std::pow((float) radius, (float)2)))) <= 0.2) {
+			if (std::abs(1 - ((double)rect.width / rect.height)) <= 0.2 &&
+				std::abs(1 - (area / (CV_PI * std::pow((float)radius, (float)2)))) <= 0.2) {
 				setLabel(result, "CIRCLE", contours[i]);
+				cv::Point position = getPosition(contours[i]);
+				Object o("CIRCLE", color, position);
+				objects.push_back(o);
 			}
 		}
 
-	//end of loop
+		//end of loop
 	}
 	imshow(color, result);
 
@@ -147,7 +161,7 @@ double ShapeDetector::angle(cv::Point pt1, cv::Point pt2, cv::Point pt0)
 	double dy1 = pt1.y - pt0.y;
 	double dx2 = pt2.x - pt0.x;
 	double dy2 = pt2.y - pt0.y;
-	return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+	return (dx1*dx2 + dy1*dy2) / sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
 }
 
 /**
@@ -164,11 +178,12 @@ void ShapeDetector::setLabel(cv::Mat& im, const std::string label, std::vector<c
 	cv::Rect r = cv::boundingRect(contour);
 
 	cv::Point pt(r.x + ((r.width - text.width) / 2), r.y + ((r.height + text.height) / 2));
-	cv::rectangle(im, pt + cv::Point(0, baseline), pt + cv::Point(text.width, -text.height), CV_RGB(255,255,255), CV_FILLED);
-	cv::putText(im, label, pt, fontface, scale, CV_RGB(0,0,0), thickness, 8);
+	cv::rectangle(im, pt + cv::Point(0, baseline), pt + cv::Point(text.width, -text.height), CV_RGB(255, 255, 255), CV_FILLED);
+	cv::putText(im, label, pt, fontface, scale, CV_RGB(0, 0, 0), thickness, 8);
 }
 
 
+//not needed anymore?
 bool ShapeDetector::isDuplicate(std::list<Object> objects, cv::Point newPosition) {
 	int tempX;
 	int tempY;

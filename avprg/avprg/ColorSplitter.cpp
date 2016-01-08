@@ -25,7 +25,7 @@ Mat ColorSplitter::getImageChannel(Mat src, String color) {
 		//convert to HSV
 		cvtColor(src, hsv, CV_BGR2HSV);
 		//define color range in HSV
-		Scalar lowerBlue = Scalar(85, 100, 100);
+		Scalar lowerBlue = Scalar(85, 50, 50);
 		Scalar upperBlue = Scalar(130, 255, 255);
 		//Threshold the HSV image to get a mask
 		inRange(hsv, lowerBlue, upperBlue, mask_blue);
@@ -44,9 +44,9 @@ Mat ColorSplitter::getImageChannel(Mat src, String color) {
 		//convert to HSV
 		cvtColor(src, hsv, CV_BGR2HSV);
 		//define color range in HSV
-		Scalar lowerRed1 = Scalar(0, 100, 100);
+		Scalar lowerRed1 = Scalar(0, 50, 50);
 		Scalar upperRed1 = Scalar(10, 255, 255);
-		Scalar lowerRed2 = Scalar(160, 100, 100);
+		Scalar lowerRed2 = Scalar(160, 50, 50);
 		Scalar upperRed2 = Scalar(180, 255, 255);
 		//Threshold the HSV image to get a mask
 		inRange(hsv, lowerRed1, upperRed1, mask_red1);
@@ -65,7 +65,7 @@ Mat ColorSplitter::getImageChannel(Mat src, String color) {
 		//convert to HSV
 		cvtColor(src, hsv, CV_BGR2HSV);
 		//define color range in HSV
-		Scalar lowerGreen = Scalar(40, 100, 100);
+		Scalar lowerGreen = Scalar(40, 50, 50);
 		Scalar upperGreen = Scalar(84, 255, 255);
 		//Threshold the HSV image to get a mask
 		inRange(hsv, lowerGreen, upperGreen, mask_green);

@@ -12,9 +12,7 @@ CollectionAggregator::CollectionAggregator()
 CollectionAggregator::~CollectionAggregator()
 {};
 
-//private
-bool newCycle;
-std::list<Object> objects;
+
 
 void CollectionAggregator::append(std::list<Object> incoming) {
 
@@ -27,8 +25,12 @@ void CollectionAggregator::append(std::list<Object> incoming) {
 }
 
 std::list<Object> CollectionAggregator::retrieve() {
-	newCycle = true;
+	setNewCycle();
 	return objects;
+}
+
+void CollectionAggregator::setNewCycle(){
+	newCycle = true;
 }
 
 bool CollectionAggregator::isDuplicate(cv::Mat img, std::list<Object> objects) {
