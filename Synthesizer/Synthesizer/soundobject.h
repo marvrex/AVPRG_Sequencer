@@ -3,25 +3,25 @@
 
 #include "midioutput.h"
 
+class Node;
 
 class SoundObject
 {
 public:
-    SoundObject(int xPos, int yPos, int colorId, int shapeId, int channel);
+    SoundObject();
     ~SoundObject();
 
 signals:
 
 public slots:
-    int xPos;
-    int yPos;
-    int colorId;
-    int shapeId;
-    int channel;
 
+    void addNode(int xPos, int yPos, int colorId, int shapeId, int channel);
+    void deleteNode(int channel);
+    void play();
+    void show();
 
-    void addSoundObject(int xPos, int yPos, int colorId, int shapeId, int channel);
-    void play(int xPos, int yPos, int colorId, int shapeId, int channel);
+    Node *start;
+    Node *actual;
 
 
 private:
