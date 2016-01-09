@@ -2,7 +2,8 @@
 #include "soundobject.h"
 #include "midioutput.h"
 #include <stdlib.h>
-#include <unistd.h>
+#include "windows.h"
+//#include <unistd.h>
 
 
 Node::Node()
@@ -17,7 +18,7 @@ void Node::wait(Node *actual){
 
     int wait = actual->xPos;
 
-    usleep(100000*wait);
+    Sleep(10*wait);
 
     actual->cooldown = false;
 
