@@ -8,6 +8,8 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+#LIBS += C:\OpenCV243\opencv\build\x86\vc10\bin
+
 TARGET = PlayMidiNote
 TEMPLATE = app
 
@@ -18,7 +20,8 @@ SOURCES += main.cpp\
 
 HEADERS  += \
     soundobject.h \
-    node.h
+    node.h \
+    ../RtMidi/rtmidi-master/RtMidi.h
 
-FORMS    += mainwindow.ui
+FORMS
 include(../drumstick/drumstick.pro)
