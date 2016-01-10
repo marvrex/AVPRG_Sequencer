@@ -18,11 +18,7 @@ void Node::wait(Node *actual){
 
     int wait = actual->xPos;
 
-<<<<<<< HEAD
-    usleep(100000*wait);
-=======
     Sleep(10*wait);
->>>>>>> origin/master
 
     actual->cooldown = false;
 
