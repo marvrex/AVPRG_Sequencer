@@ -25,7 +25,6 @@ void CollectionAggregator::append(std::list<Object> incoming) {
 }
 
 std::list<Object> CollectionAggregator::retrieve() {
-	setNewCycle();
 	return objects;
 }
 
