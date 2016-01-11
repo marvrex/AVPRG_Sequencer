@@ -61,7 +61,7 @@ std::list<Object> ShapeDetector::getShapes(String color, Mat src, int thresh) {
 		cv::approxPolyDP(cv::Mat(contours[i]), approx, cv::arcLength(cv::Mat(contours[i]), true) * 0.02, true);
 
 		//skip small and non-convex shapes
-		if (std::fabs(cv::contourArea(contours[i])) < 100 || !cv::isContourConvex(approx))
+		if (std::fabs(cv::contourArea(contours[i])) < 1000 || !cv::isContourConvex(approx))
 			continue;
 
 		//Triangle

@@ -22,6 +22,7 @@ int verbinden(vector<vector<Point> > shapes);
 int thresh = 150;
 int max_thresh = 255;
 long t = time(0);
+long t2 = time(0);
 ColorSplitter colorSplitter;
 ShapeDetector shapeDetector;
 CollectionAggregator aggregator;
@@ -33,13 +34,13 @@ Mat src;
 
 void debugOutput(CollectionAggregator);
 void detect();
-void playSound(SoundObject*);
+void playSound();
 int colorToVolume(String);
 int shapeToInstrument(String);
 int i = 0;
 int highest_channel = -1;
 std::list<Object> sounds;
-
+SoundObject *o;
 
 
 String imageDirectory = "C:\\Users\\Timmi\\Desktop\\AVPRG_Sequencer\\test3.jpg";
@@ -53,17 +54,14 @@ int main(int argc, char *argv[])
 
 	CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
-	SoundObject *o = new SoundObject();
-
-
-
-
+	
 	VideoCapture cap(0);
 	namedWindow("src", WINDOW_AUTOSIZE);
+	namedWindow("test", WINDOW_AUTOSIZE);
+	Mat test(300, 300, CV_8UC3, Scalar(0));
 
-	//createTrackbar("Canny thresh:", "src", &thresh, max_thresh);
-
-
+	o = new SoundObject();
+	
 	if (!isImage){
 		/*
 		*VIDEO
@@ -71,48 +69,9 @@ int main(int argc, char *argv[])
 		for (;;){
 			//Load frame
 			cap >> src;
+			
 			//detect shapes
 			detect();
-
-
-
-
-
-			sounds.clear();
-
-			//get sounds
-			sounds = aggregator.retrieve();
-
-
-			list<Object>::iterator iter = sounds.begin();
-
-			while (iter != sounds.end()) {
-				Object& temp = *iter;
-				o->addNode(temp.getPosition().x, temp.getPosition().y, colorToVolume(temp.getColor()), shapeToInstrument(temp.getName()), i);
-				highest_channel = i;
-				i++;
-				iter++;
-			}
-			
-
-
-			o->play();
-
-			for (int j = 0; j <= 10000; j++){
-				o->deleteNode(j);
-			}
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 			if (waitKey(30) == 27) break;
@@ -164,25 +123,25 @@ int colorToVolume(String color){
 	return 127;
 }
 
-
+//1, 12, 45
 
 int shapeToInstrument(String shape){
 	if (shape.compare("TRI") == 0){
-		return 10;
+		return 1;
 	}
 	else if (shape.compare("RECT") == 0){
-		return 20;
+		return 1;
 	}
 	else if (shape.compare("PENTA") == 0){
-		return 30;
+		return 1;
 	}
 	else if (shape.compare("HEXA") == 0){
-		return 40;
+		return 1;
 	}
 	else{
-		return 50;
+		return 1;
 	}
-	return 50;
+	return 1;
 }
 
 
@@ -190,46 +149,28 @@ int shapeToInstrument(String shape){
 
 
 
-bool first = true;
-
-void playSound(SoundObject *o){
-
-	if (first){
-		
-		first = false;
-	}
+void playSound(){
 
 	sounds.clear();
+	o->deleteAll();
 
 	//get sounds
 	sounds = aggregator.retrieve();
-
+	
 
 	list<Object>::iterator iter = sounds.begin();
 
 	while (iter != sounds.end()) {
 		Object& temp = *iter;
 		o->addNode(temp.getPosition().x, temp.getPosition().y, colorToVolume(temp.getColor()), shapeToInstrument(temp.getName()), i);
-		highest_channel = i;
 		i++;
 		iter++;
 	}
 	
-	
-	
+		
 	o->play();
-
-	for (int j = 0; j <= 10000; j++){
-		o->deleteNode(j);
-	}
-
-	
-
-	highest_channel = -1;
 	i = 0;
 
-
-	//o->show();
 }
 
 
@@ -251,7 +192,7 @@ void detect(){
 	debugOutput(aggregator);
 
 
-	//playSound(o);
+	playSound();
 
 
 	aggregator.setNewCycle();

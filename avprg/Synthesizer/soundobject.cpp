@@ -85,6 +85,12 @@ void SoundObject::show(){
 }
 
 void SoundObject::deleteAll(){
-    this->start->next = NULL;
-    this->actual = this->start;
+	this->actual = this->start;
+	while (this->actual->next != NULL){
+		midiOutput.sendNoteOff(this->actual->channel, this->actual->yPos + 60, this->actual->colorId);
+		this->actual = this->actual->next;
+	}
+	midiOutput.sendNoteOff(this->actual->channel, this->actual->yPos + 60, this->actual->colorId);
+	this->start->next = NULL;
+	this->actual = this->start;
 }
