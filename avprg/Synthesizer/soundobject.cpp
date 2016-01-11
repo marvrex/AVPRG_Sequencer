@@ -83,3 +83,8 @@ void SoundObject::show(){
     }
     cout << "Ton Nummer " << this->actual->channel;
 }
+
+void SoundObject::deleteAll(){
+    this->start->next = NULL;
+    this->actual = this->start;
+}
