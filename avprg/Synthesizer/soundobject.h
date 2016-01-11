@@ -17,6 +17,7 @@ public slots:
 
     void addNode(int xPos, int yPos, int colorId, int shapeId, int channel);
     void deleteNode(int channel);
+    void deleteAll();
     void play();
     void show();
 
